@@ -1,21 +1,28 @@
 from flask import Flask, request, jsonify
-import uuid
 
 app = Flask(__name__)
 
-@app.route('/processPayment', methods=['POST'])
+@app.route("/processPayment", methods=["POST"])
 def process_payment():
-    data = request.get_json()
+    # Accept either JSON or form-data (x-www-form-urlencoded)
+    data = request.get_json(silent=True)
+    if data is None:
+        data = request.form
 
-    required_fields = ['from_account', 'store_code', 'amount', 'currency']
-    if not all(field in data for field in required_fields):
+    from_account = data.get("from_account")
+    store_code = data.get("store_code")
+    amount = data.get("amount")
+    currency = data.get("currency")
+
+    # Check for missing fields
+    if not all([from_account, store_code, amount, currency]):
         return jsonify({
             "status": "error",
             "message": "Missing required fields"
         }), 400
 
-    # Dummy logic
-    transaction_id = f"TXN{uuid.uuid4().hex[:10].upper()}"
+    # Dummy transaction logic
+    transaction_id = "TXN123456"
 
     return jsonify({
         "status": "success",
@@ -23,5 +30,5 @@ def process_payment():
         "message": "Payment processed successfully"
     }), 200
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)
